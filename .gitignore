@@ -1,0 +1,25 @@
+# 绝不提交游戏本体或任何可运行的 exe / 二进制
+*.exe
+*.dll
+*.bin
+*.bak
+*.orig
+*.zip
+*.7z
+*.rar
+
+# 构建 / 提取产物目录（游戏本体与中间数据一律不入库）
+dist/
+work/
+recovered/
+extract/
+release/
+trans/
+tools/
+rt/
+gametest/
+output/
+
+# Python
+__pycache__/
+*.pyc
