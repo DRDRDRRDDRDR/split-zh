@@ -36,4 +36,4 @@ PCK      : pck_start=68835328 flags=2 file_base=138752 base=68974080 ds=33835234
     共同条目 1347 个，逐条相同 1347，不同 0
     => 1347 条逐条字节相同 ✓（整文件字节不同属正常：官方成品是GDRE 全量重建 + 两次 splice 的产物，数据区布局必然不同）
 
-VERDICT: PASS   (3.5s)
+VERDICT: PASS   (4.2s)
