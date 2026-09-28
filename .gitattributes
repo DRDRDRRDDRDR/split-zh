@@ -1,0 +1,7 @@
+# 所有文本文件一律以 LF 存取，禁止行尾转换。
+#
+# 原因：Windows 上 Git for Windows 的**系统级**配置默认 core.autocrlf=true
+# （本机即 C:/Program Files/Git/etc/gitconfig 里就是 true），会在检出时把 LF 换成 CRLF，
+# 于是用户拿到的 apply_patch.py / e2e-report.txt 字节与 SHA256SUMS.txt 记录的哈希不符。
+# 这里用 text=auto eol=lf 固定下来：仓库内与工作区都是 LF，任何平台检出一致。
+* text=auto eol=lf
