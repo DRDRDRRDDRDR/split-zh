@@ -3,7 +3,7 @@ s.p.l.i.t 简体中文汉化补丁 · 应用器
 ==============================================================================
 补丁包   : C:\Users\DR\Downloads\DSH\split-zh-mod\release\payload.zip
   manifest: pristine 2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6 (407187680 B)
-            patched  98ED67B518E2FC017CED427F19AB786A1F9EF353DBCD9A0707191496482F2472 (415215259 B)
+            patched  0C1A77C842FED51EFCA6038CB90505D2EDE3BE9600939D6E3C281C00C429C4C3 (415215257 B)
   条目     : differ=72  new=1  dropped=0
 
 输入 exe : C:\Users\DR\Downloads\DSH\split-zh-mod\work\pristine_safe\split.exe
@@ -19,12 +19,12 @@ PCK      : pck_start=68835328 flags=2 file_base=138752 base=68974080 ds=33835234
 索引     : 138652 -> 138712 B（+60，新增 ['fonts/cjk.fontdata']）
 数据区   : base 68974080 -> 68974144（后移 64 B，16 字节对齐）
 差异条目 : 就地替换 72 个（变大 48 / 变小 11 / 等长 13）
-新增条目 : fonts/cjk.fontdata  7743989 B  ofs=338485484（追加在数据区末尾）
+新增条目 : fonts/cjk.fontdata  7743989 B  ofs=338485482（追加在数据区末尾）
 
 已写出   : C:\Users\DR\AppData\Local\Temp\split-zh-verify\split_zh.exe
-  长度   : 415203629 B（原版 407187680，+8015949；其中索引扩容后移 64 + 条目长度差 +8015885）
-  ds     : 338352340 -> 346368289   PE pck rsize -> 346368301
-  SHA256 : C155BCB38C1AE4A87225B848C462B62329EC4014384F8931E4F8A5D803EE54C2
+  长度   : 415203627 B（原版 407187680，+8015947；其中索引扩容后移 64 + 条目长度差 +8015883）
+  ds     : 338352340 -> 346368287   PE pck rsize -> 346368299
+  SHA256 : D610BF3DEC31951D97FDAA640FF28E02986D751440F59966861A0B1F54675FDB
 
 ------------------------------------------------------------------------------
 自检（判据：解包后条目逐条字节相同；**不要求**与任何 exe 整文件逐字节相同）
@@ -36,4 +36,4 @@ PCK      : pck_start=68835328 flags=2 file_base=138752 base=68974080 ds=33835234
     共同条目 1347 个，逐条相同 1347，不同 0
     => 1347 条逐条字节相同 ✓（整文件字节不同属正常：官方成品是GDRE 全量重建 + 两次 splice 的产物，数据区布局必然不同）
 
-VERDICT: PASS   (2.6s)
+VERDICT: PASS   (3.0s)
