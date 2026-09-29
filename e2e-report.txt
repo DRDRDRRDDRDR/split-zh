@@ -3,10 +3,10 @@ s.p.l.i.t 简体中文汉化补丁 · 应用器
 ==============================================================================
 补丁包   : C:\Users\DR\Downloads\DSH\split-zh-mod\release\payload.zip
   manifest: pristine 2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6 (407187680 B)
-            patched  9A86B66440F779262E9A6BC7875DDC9F9CFFCC4ED05E98E560EC43F3FBAB5748 (415216112 B)
+            patched  070DD0474EBD80789F0D8818DBDBF6ED50C100673DC23FF448C97E5222755720 (415216112 B)
   条目     : differ=73  new=1  dropped=0
 
-输入 exe : C:\Users\DR\Downloads\DSH\split-zh-mod\work\pristine_safe\split.exe
+输入 exe : C:\Users\DR\Downloads\DSH\split-zh-mod\work\sandbox\split.exe
   长度   : 407187680 B
   SHA256 : 2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6
   -> 与补丁包要求一致 ✓
@@ -24,7 +24,7 @@ PCK      : pck_start=68835328 flags=2 file_base=138752 base=68974080 ds=33835234
 已写出   : C:\Users\DR\Downloads\DSH\split-zh-mod\work\out\split_zh_selfproof.exe
   长度   : 415204482 B（原版 407187680，+8016802；其中索引扩容后移 64 + 条目长度差 +8016738）
   ds     : 338352340 -> 346369142   PE pck rsize -> 346369154
-  SHA256 : 077B2F26ADFDC00904A73F342F57EBAEA1EFE09B8DAACA01CE56D42CF8440CDA
+  SHA256 : 7F0C079AA939CF9685900D1CA7DC9F5C98BDC22F72F60CEA324E196B28A82614
 
 ------------------------------------------------------------------------------
 自检（判据：解包后条目逐条字节相同；**不要求**与任何 exe 整文件逐字节相同）
@@ -36,4 +36,4 @@ PCK      : pck_start=68835328 flags=2 file_base=138752 base=68974080 ds=33835234
     共同条目 1347 个，逐条相同 1347，不同 0
     => 1347 条逐条字节相同 ✓（整文件字节不同属正常：官方成品是GDRE 全量重建 + 两次 splice 的产物，数据区布局必然不同）
 
-VERDICT: PASS   (3.0s)
+VERDICT: PASS   (3.9s)
