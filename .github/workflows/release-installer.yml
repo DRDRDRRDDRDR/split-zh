@@ -6,9 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      tag:
-        description: Tag label for a build-only preview (does not publish a Release)
-        required: true
+      preview_name:
+        description: Optional name for the build-only preview artifact
+        required: false
         type: string
 
 permissions:
@@ -65,16 +65,13 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         shell: pwsh
         run: |
-          $notes = @"
+          $notes = @'
           Windows 简体中文汉化安装器。请自备 Steam 正版游戏；Release 不含游戏本体。
 
-          下载 `s.p.l.i.t-zh-installer.zip`，解压后运行 `install.ps1` 并选择正版原版 `split.exe`。安装器会先校验输入、生成补丁并验证资源条目，然后备份原文件并安装。
+          下载 `s.p.l.i.t-zh-installer.zip`，解压后运行 `install.ps1` 并选择正版原版 `split.exe`。安装器会校验原版和载荷、构建并验证资源后安装，保留 `split.exe.orig.bak` 回滚备份。
 
-          资产：
-          - `s.p.l.i.t-zh-installer.zip`：安装、验证、回滚脚本，应用器，payload 与文档。
-          - `payload.zip`：仅汉化资源载荷。
-          - `s.p.l.i.t-zh-installer.zip.sha256`：安装器包 SHA256。
-          "@
+          资产包括 Windows 安装器 ZIP、独立 `payload.zip` 和安装器 SHA256。
+          '@
           Set-Content -Path dist/release-notes.md -Value $notes -Encoding utf8
           gh release create $env:RELEASE_TAG staging/payload.zip dist/s.p.l.i.t-zh-installer.zip dist/s.p.l.i.t-zh-installer.zip.sha256 --repo $env:GITHUB_REPOSITORY --title "$env:RELEASE_TAG · s.p.l.i.t 简体中文汉化安装器" --notes-file dist/release-notes.md
 
@@ -82,7 +79,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: s.p.l.i.t-zh-installer-preview
+          name: ${{ inputs.preview_name || 's.p.l.i.t-zh-installer-preview' }}
           path: |
             dist/s.p.l.i.t-zh-installer.zip
             dist/s.p.l.i.t-zh-installer.zip.sha256
