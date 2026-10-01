@@ -1,22 +1,14 @@
-# s.p.l.i.t Simplified-Chinese patch - checksums
+# s.p.l.i.t Simplified-Chinese installer - repository checksums
 #
-# ASCII-only on purpose: Windows PowerShell 5.1 reads BOM-less UTF-8 files as ANSI/GBK,
-# and a GBK lead byte can swallow a following 0x0A newline, merging two lines and
-# breaking naive parsers. This file therefore contains only ASCII.
-#
-# All text files are stored with LF line endings (see .gitattributes: * text=auto eol=lf).
-# Verify with:  Get-FileHash <file> -Algorithm SHA256     (PowerShell)
-#               sha256sum <file>                          (Git Bash / Linux / macOS)
-
 ## files in this repository
 0F3C38F33AD9D88748DDCF19540A025AD741DBFB76CB24807BA82A7BC5D50E3F  .gitattributes
-53CB8D93179E2E362A39F13DCF58439432961167A612FD2B704231EACA3F664C  README.md
-2401549AC3E3FB5009A6DC574E7447A76BAB42ADD07D3FAC4DBAC2D29AAB7924  RELEASE-NOTES.md
+0350CE7C351F61637302F9C00EFABA3126E34C057208673AF3B927C4229C971D  README.md
+C14D07DFF8B3E7F40721570242B194411A770D19149FC0F2C8998A7E15B9F0D4  RELEASE-NOTES.md
 F77879317036AA7937C91D1DDA26FC2951576D1B62FBE3EA98F654D31394FF60  apply_patch.py
 9952745B476D7DF3D3FB874A9B86912C47B12D25DD6424EB720AB6EC40B0AE1E  e2e-report.txt
 
-## Release asset (not part of this repo; download from the Releases page)
+# Release payload (published asset)
 42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B  34100519  payload.zip
 
-## retail exe (you must own it; never distributed here)
+## retail exe (user-provided, never distributed)
 2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6  407187680  split.exe
