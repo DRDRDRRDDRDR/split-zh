@@ -1,0 +1,56 @@
+name: Build and publish Windows installer
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  package-installer:
+    runs-on: windows-latest
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Download verified translation payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAYLOAD_TAG: v1.1.0
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force staging | Out-Null
+          gh release download $env:PAYLOAD_TAG --repo $env:GITHUB_REPOSITORY --pattern payload.zip --dir staging
+          $file = Get-Item staging/payload.zip
+          $sha = (Get-FileHash staging/payload.zip -Algorithm SHA256).Hash.ToUpperInvariant()
+          if ($file.Length -ne 34100519 -or $sha -ne '42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B') {
+            throw "payload verification failed: $($file.Length) bytes / $sha"
+          }
+
+      - name: Assemble self-contained installer package
+        shell: pwsh
+        run: |
+          $out = 'dist/s.p.l.i.t-zh-installer'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          Copy-Item install.ps1, uninstall.ps1, verify.ps1, apply_patch.py, README.md, RELEASE-NOTES.md, SHA256SUMS.txt -Destination $out
+          Copy-Item staging/payload.zip -Destination $out/payload.zip
+          $files = Get-ChildItem $out -File | Sort-Object Name
+          $lines = foreach ($file in $files) {
+            $hash = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($file.Name)"
+          }
+          $lines | Set-Content -Encoding ascii "$out/SHA256SUMS-installer.txt"
+          Compress-Archive -Path "$out/*" -DestinationPath 'dist/s.p.l.i.t-zh-installer.zip' -CompressionLevel Optimal
+          Get-FileHash dist/s.p.l.i.t-zh-installer.zip -Algorithm SHA256 | Format-List | Out-File dist/s.p.l.i.t-zh-installer.zip.sha256 -Encoding ascii
+
+      - name: Create GitHub Release and upload installer assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: pwsh
+        run: |
+          gh release create $env:RELEASE_TAG dist/s.p.l.i.t-zh-installer.zip dist/s.p.l.i.t-zh-installer.zip.sha256 --repo $env:GITHUB_REPOSITORY --title "$env:RELEASE_TAG · s.p.l.i.t 简体中文汉化安装器" --notes-file RELEASE-NOTES.md

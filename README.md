@@ -1,6 +1,8 @@
-# s.p.l.i.t 简体中文汉化补丁
+# s.p.l.i.t 简体中文汉化安装器
 
-给 Steam 正版游戏 **s.p.l.i.t**（Mike Klubnika，Godot 4.4.1）做简体中文汉化的**补丁包**。
+面向 Steam 正版 **s.p.l.i.t**（Mike Klubnika，Godot 4.4.1）的 Windows 简体中文汉化安装器。
+
+> GitHub Actions 会在发布版本 tag 时自动构建 `s.p.l.i.t-zh-installer.zip` 并上传到 GitHub Release。安装包不含游戏本体；首次安装需用户提供 Steam 原版 `split.exe`。
 
 > ## ⚠️ 法律声明
 > **本仓库不含游戏本体，也不含任何可独立运行的游戏文件。**
@@ -37,7 +39,8 @@
 | 文件 | 大小 | SHA256 |
 |---|---|---|
 | 原版 `split.exe`（你自备） | 407,187,680 B | `2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6` |
-| `payload.zip`（本地待验收候选，尚未上传） | 34,100,519 B | `42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B` |
+| `payload.zip`（v1.1.0 Release 资源） | 34,100,519 B | `42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B` |
+| 汉化版参考 `split.exe`（本机资源布局示例） | 415,217,163 B | `83C09CDE6204746360CCDC062BB43C59C12AEB1D0037AF87BFA700E931258AC1` |
 
 ### 修订记录（2026-09-29）
 
@@ -70,33 +73,26 @@
 产物的哈希与体积取决于本机布局（见下文「自检判据」）。参考成品为
 415,217,163 B / `83C09CDE6204746360CCDC062BB43C59C12AEB1D0037AF87BFA700E931258AC1`。
 
-当前是**尚未上传的方案A候选**：按用户授权清空三个动态 Label，接受动态显示丢失；六张聊天贴图完成替换。独立增量门确认相对已发布列位修复基线恰好七资源变化，场景仅17字节改变且全部位于三个授权槽，七个列位修复槽哈希保留。
-历史套件22/25 PASS：union、translation-landed、tabbar仍FAIL，未修改历史判据，不能声称全门通过。当前候选未实机验证，下面的历史实机确认不适用于本候选。
+v1.1.0 完整思维文本中文显示版已发布：玩家仍输入英文，画面显示中文，触发 alias 保持英文。所有思维文本映射均在 `LabelSplitter` 中处理；已对发布参考构建完成 PCK MD5（1347/1347）、GDScript 字节码（117/117）及交付完整性验收。不同 Steam 安装的 PCK 布局可能不同，安装器会按资源条目校验结果，不要求生成 EXE 与本机参考哈希整文件相同。
 
 ---
 
-## 二、怎么用
+## 二、安装
 
 ### 环境要求
 
-- Windows
-- **Python 3.8+**（脚本只用标准库，不需要 pip 安装任何东西）
+- Windows 10/11
+- Python 3.8+（仅使用标准库）
+- Steam 正版游戏文件
 
-### 步骤
+### 安装步骤
 
-1. 从本仓库的 **Releases** 页面下载 `payload.zip`，和 `apply_patch.py` 放在一起。
-2. 找到你自己的正版原版 exe，建议先备份一份：
-   ```
-   C:\Program Files (x86)\Steam\steamapps\common\s.p.l.i.t\split_Windows\split.exe
-   ```
-3. 生成汉化版（**不要**直接输出到游戏目录，先输出到别处检查）：
+1. 从 [Releases](https://github.com/DRDRDRRDDRDR/split-zh/releases/latest) 下载 `s.p.l.i.t-zh-installer.zip` 并解压。
+2. 退出游戏；右键 `install.ps1`，选择“使用 PowerShell 运行”，或在 PowerShell 执行 `./install.ps1`。
+3. 在文件选择窗口中选取 Steam 游戏目录里的原版 `split.exe`。安装器会校验原版 SHA256，先生成并验证补丁，再创建 `split.exe.orig.bak` 备份并安装。
+4. 如需检查安装状态，运行 `verify.ps1`；如需恢复，运行 `uninstall.ps1`。
 
-   ```powershell
-   python apply_patch.py --exe "C:\Program Files (x86)\Steam\steamapps\common\s.p.l.i.t\split_Windows\split.exe" --payload payload.zip --out split_zh.exe
-   ```
-
-4. 退出游戏与 Steam（避免 Steam 在后台校验文件），把 `split_zh.exe` 复制到游戏目录、
-   重命名为 `split.exe` 覆盖（**原版请务必留备份**）。
+安装器不会分发游戏本体。它只包含补丁资源、Python 标准库应用器和 PowerShell 安装/验证/回滚脚本。
 
 ### 参数
 

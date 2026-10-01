@@ -5,17 +5,11 @@
 `payload.zip` 里只有 **74 个被改动的游戏资源条目**（编译后的 GDScript、场景、字体、重绘贴图），
 **不是**可独立运行的游戏。你必须拥有 Steam 正版 **s.p.l.i.t**，补丁才能应用。
 
-## 下载与用法
+## Windows 安装器
 
-1. 下载本 Release 的资产 **`payload.zip`**（34,100,519 B）。
-2. 下载仓库里的 [`apply_patch.py`](https://github.com/DRDRDRRDDRDR/split-zh/blob/main/apply_patch.py)（纯标准库，只需 Python 3.8+）。
-3. 备份你自己的原版 exe，然后运行：
+下载 `s.p.l.i.t-zh-installer.zip` 并解压，运行 `install.ps1`，在选择窗口中指定 Steam 正版目录内的原版 `split.exe`。安装器先校验原版和补丁资源，再备份 `split.exe.orig.bak` 并安装。`verify.ps1` 检查状态，`uninstall.ps1` 从备份恢复。
 
-   ```powershell
-   python apply_patch.py --exe "C:\Program Files (x86)\Steam\steamapps\common\s.p.l.i.t\split_Windows\split.exe" --payload payload.zip --out split_zh.exe
-   ```
-
-4. 退出游戏与 Steam，把 `split_zh.exe` 覆盖回游戏目录的 `split.exe`。
+安装包由 GitHub Actions 在发布 tag 时自动组装，包含 PowerShell 安装/验证/回滚脚本、Python 标准库应用器、`payload.zip`、README、Release Notes 与逐文件 SHA256 清单。不包含游戏 EXE。
 
 详见 [README](https://github.com/DRDRDRRDDRDR/split-zh#readme)。
 
