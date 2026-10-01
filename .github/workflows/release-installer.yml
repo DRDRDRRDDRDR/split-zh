@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag label for a build-only preview (does not publish a Release)
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -15,16 +21,21 @@ jobs:
       - name: Check out tagged source
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
 
       - name: Download verified translation payload
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           PAYLOAD_TAG: v1.1.0
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force staging | Out-Null
-          gh release download $env:PAYLOAD_TAG --repo $env:GITHUB_REPOSITORY --pattern payload.zip --dir staging
+          $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
+          $release = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/tags/$env:PAYLOAD_TAG"
+          $asset = @($release.assets | Where-Object { $_.name -eq 'payload.zip' }) | Select-Object -First 1
+          if (-not $asset) { throw "payload.zip not found on $env:PAYLOAD_TAG" }
+          Invoke-WebRequest -Headers @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/octet-stream' } -Uri $asset.url -OutFile staging/payload.zip
           $file = Get-Item staging/payload.zip
           $sha = (Get-FileHash staging/payload.zip -Algorithm SHA256).Hash.ToUpperInvariant()
           if ($file.Length -ne 34100519 -or $sha -ne '42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B') {
@@ -48,9 +59,32 @@ jobs:
           Get-FileHash dist/s.p.l.i.t-zh-installer.zip -Algorithm SHA256 | Format-List | Out-File dist/s.p.l.i.t-zh-installer.zip.sha256 -Encoding ascii
 
       - name: Create GitHub Release and upload installer assets
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         shell: pwsh
         run: |
-          gh release create $env:RELEASE_TAG dist/s.p.l.i.t-zh-installer.zip dist/s.p.l.i.t-zh-installer.zip.sha256 --repo $env:GITHUB_REPOSITORY --title "$env:RELEASE_TAG · s.p.l.i.t 简体中文汉化安装器" --notes-file RELEASE-NOTES.md
+          $notes = @"
+          Windows 简体中文汉化安装器。请自备 Steam 正版游戏；Release 不含游戏本体。
+
+          下载 `s.p.l.i.t-zh-installer.zip`，解压后运行 `install.ps1` 并选择正版原版 `split.exe`。安装器会先校验输入、生成补丁并验证资源条目，然后备份原文件并安装。
+
+          资产：
+          - `s.p.l.i.t-zh-installer.zip`：安装、验证、回滚脚本，应用器，payload 与文档。
+          - `payload.zip`：仅汉化资源载荷。
+          - `s.p.l.i.t-zh-installer.zip.sha256`：安装器包 SHA256。
+          "@
+          Set-Content -Path dist/release-notes.md -Value $notes -Encoding utf8
+          gh release create $env:RELEASE_TAG staging/payload.zip dist/s.p.l.i.t-zh-installer.zip dist/s.p.l.i.t-zh-installer.zip.sha256 --repo $env:GITHUB_REPOSITORY --title "$env:RELEASE_TAG · s.p.l.i.t 简体中文汉化安装器" --notes-file dist/release-notes.md
+
+      - name: Upload build-only preview artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: s.p.l.i.t-zh-installer-preview
+          path: |
+            dist/s.p.l.i.t-zh-installer.zip
+            dist/s.p.l.i.t-zh-installer.zip.sha256
+            staging/payload.zip
+            dist/s.p.l.i.t-zh-installer/SHA256SUMS-installer.txt
