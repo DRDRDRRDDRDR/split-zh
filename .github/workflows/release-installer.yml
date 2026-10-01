@@ -38,7 +38,7 @@ jobs:
           Invoke-WebRequest -Headers @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/octet-stream' } -Uri $asset.url -OutFile staging/payload.zip
           $file = Get-Item staging/payload.zip
           $sha = (Get-FileHash staging/payload.zip -Algorithm SHA256).Hash.ToUpperInvariant()
-          if ($file.Length -ne 34100519 -or $sha -ne '42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B') {
+          if ($file.Length -ne 34100568 -or $sha -ne '3BB15307EF19B4CE483EB33703453E0FDEA894D2F91AE910558E4785F1D08FC6') {
             throw "payload verification failed: $($file.Length) bytes / $sha"
           }
 
