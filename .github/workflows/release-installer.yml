@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PAYLOAD_TAG: v1.1.0
+          PAYLOAD_TAG: payload-v1.3.0
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force staging | Out-Null
