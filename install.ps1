@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
     s.p.l.i.t 简体中文汉化安装器
     从发布包中提取 payload，以用户提供的正版 split.exe 构建并安装。
@@ -11,10 +11,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $ExpectedOrigSha = '2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6'
 $ExpectedOrigLen = 407187680
+$ExpectedPayloadSha = '42CD4762EBD9AAD9A2D7D347BD120FF508268AB6716DD0631057D2B855E50D0B'
+$ExpectedPayloadLen = 34100519
 $Patcher = Join-Path $PSScriptRoot 'apply_patch.py'
 $Payload = Join-Path $PSScriptRoot 'payload.zip'
 $TempRoot = Join-Path ([IO.Path]::GetTempPath()) ('split-zh-' + [guid]::NewGuid().ToString('N'))
-$ErrorActionPreference = 'Stop'
 $Python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $Python) { throw '未检测到 Python 3，请先安装 Python 3.8 或更新版本。' }
 if (-not (Test-Path -LiteralPath $Payload)) { throw "找不到 payload.zip: $Payload" }
@@ -40,16 +41,14 @@ $Target = Join-Path $GameDir 'split.exe'
 if ([IO.Path]::GetFullPath($Target) -ne [IO.Path]::GetFullPath($ExePath)) { throw '所选 split.exe 必须位于要安装的游戏目录；请调整 -GameDir 或重新选择文件。' }
 if (@(Get-Process -Name split -ErrorAction SilentlyContinue).Count -gt 0) { throw '游戏正在运行，请退出游戏后重试。' }
 $Backup = Join-Path $GameDir 'split.exe.orig.bak'
-$Built = $null
 $Temp = Join-Path $GameDir 'split.exe.zh-installing'
 try {
     New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-    Expand-Archive -LiteralPath $Payload -DestinationPath $TempRoot -Force
-    $PayloadExtracted = Join-Path $TempRoot 'payload.zip'
-    if (-not (Test-Path -LiteralPath $PayloadExtracted)) { throw '安装器包内未找到 payload.zip。' }
+    $PayloadSha = (Get-FileHash -LiteralPath $Payload -Algorithm SHA256).Hash.ToUpperInvariant()
+    if ((Get-Item -LiteralPath $Payload).Length -ne $ExpectedPayloadLen -or $PayloadSha -ne $ExpectedPayloadSha) { throw 'payload.zip 哈希或长度不符，拒绝继续。' }
     $Built = Join-Path $TempRoot 'split.exe.zh-new'
     $Report = Join-Path $TempRoot 'build-report.txt'
-    & $Python.Source $Patcher --exe $ExePath --payload $PayloadExtracted --out $Built --report $Report
+    & $Python.Source $Patcher --exe $ExePath --payload $Payload --out $Built --report $Report
     if ($LASTEXITCODE -ne 0) { throw "补丁构建失败，退出码 $LASTEXITCODE。" }
     if (-not (Test-Path -LiteralPath $Built) -or -not (Select-String -LiteralPath $Report -Pattern '^VERDICT: PASS' -Quiet)) { throw "应用器报告未通过验收：$Report" }
     $BuiltItem = Get-Item -LiteralPath $Built
@@ -72,6 +71,15 @@ try {
         Copy-Item -LiteralPath $Backup -Destination $Target -Force
         throw "安装失败，已从原版备份回滚。$($_.Exception.Message)"
     }
+    $Receipt = @{
+        version = 1
+        installed_length = $InstalledLen
+        installed_sha256 = $InstalledSha
+        original_length = $ExpectedOrigLen
+        original_sha256 = $ExpectedOrigSha
+        installed_utc = [DateTime]::UtcNow.ToString('o')
+    } | ConvertTo-Json
+    Set-Content -LiteralPath (Join-Path $GameDir 'split-zh-install.json') -Value $Receipt -Encoding UTF8
     Write-Host "汉化安装完成。大小: $InstalledLen 字节；SHA256: $InstalledSha"
     Write-Host "原版备份保留于: $Backup"
 } finally {
