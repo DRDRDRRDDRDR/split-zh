@@ -20,6 +20,10 @@ rt/
 gametest/
 output/
 
+# 例外：验收门是交付物的一部分，维护者与用户都要能复现验证
+!tools/
+!tools/*.py
+
 # Python
 __pycache__/
 *.pyc
