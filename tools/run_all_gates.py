@@ -22,6 +22,8 @@ GATES = [
     ("verify_thoughts_gate.py",  "every thought has a displayable Chinese form"),
     ("verify_phrase_layout.py",  "batched thoughts share one row, no overlap"),
     ("verify_tab_label.py",      "labels sit in the band retail drew them in"),
+    ("verify_nano_labels.py",    "nano editor labels are centred in their boxes"),
+    ("verify_overlay_labels.py", "translated overlay labels keep retail's ink band"),
     ("verify_logic_keys.py",     "control-flow literals survive translation"),
     ("verify_delivery.py",       "release/ matches dist, pins agree, rollback valid"),
 ]
