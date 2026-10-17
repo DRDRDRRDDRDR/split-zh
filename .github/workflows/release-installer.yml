@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PAYLOAD_TAG: payload-v1.5.1
+          PAYLOAD_TAG: payload-v1.5.3
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force staging | Out-Null
@@ -38,7 +38,7 @@ jobs:
           Invoke-WebRequest -Headers @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/octet-stream' } -Uri $asset.url -OutFile staging/payload.zip
           $file = Get-Item staging/payload.zip
           $sha = (Get-FileHash staging/payload.zip -Algorithm SHA256).Hash.ToUpperInvariant()
-          if ($file.Length -ne 34101415 -or $sha -ne '36938BFAEFA739FF50C90252174E3227A3B0A46ED96852B17A18634D735307E2') {
+          if ($file.Length -ne 34124523 -or $sha -ne '1870194FE7EE9502EF38911A0FD5046C8BEA67E9236402978024D44B84DE6B18') {
             throw "payload verification failed: $($file.Length) bytes / $sha"
           }
 

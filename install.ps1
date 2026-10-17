@@ -11,8 +11,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $ExpectedOrigSha = '2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6'
 $ExpectedOrigLen = 407187680
-$ExpectedPayloadSha = '36938BFAEFA739FF50C90252174E3227A3B0A46ED96852B17A18634D735307E2'
-$ExpectedPayloadLen = 34101415
+$ExpectedPayloadSha = '1870194FE7EE9502EF38911A0FD5046C8BEA67E9236402978024D44B84DE6B18'
+$ExpectedPayloadLen = 34124523
 $Patcher = Join-Path $PSScriptRoot 'apply_patch.py'
 $Payload = Join-Path $PSScriptRoot 'payload.zip'
 $TempRoot = Join-Path ([IO.Path]::GetTempPath()) ('split-zh-' + [guid]::NewGuid().ToString('N'))

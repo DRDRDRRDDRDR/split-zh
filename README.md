@@ -21,13 +21,20 @@
 
 思维输入仍要求玩家键入英文，以保持原有逐字输入机制；对应中文会在画面显示。
 
+## v1.5.3 摘要
+
+- **X 键可正常输入**：nano 编辑器进出后 `held_ctrl` 闩锁卡住、导致 X 键被吞的问题已修。
+- **思维中文逐词消失**：每个词敲完即清掉自己那行中文，全组节奏一致。
+- **终端报错块栏位名汉化**：`CategoryInfo`、`FullyQualifiedErrorId` 译为中文，栏位值与占位符逐字节保留。
+- **新消息提示贴图汉化**：生效的 `alert2` 正文改为 `新消息.`。
+
 ## 校验值
 
 | 文件 | 大小 | SHA256 |
 |---|---:|---|
 | 原版 `split.exe`（用户自备） | 407,187,680 B | `2F5E7E3EC06E1E3ECA3623E75DF65DE342DC39E21B886B59BA5D455BC752C9F6` |
-| `payload.zip`（当前 Release 资源） | 34,101,415 B | `36938BFAEFA739FF50C90252174E3227A3B0A46ED96852B17A18634D735307E2` |
-| 本机参考构建 `split.exe` | 415,218,016 B | `2AE914FD34E6A56C2E12457D5869D1D01F6BA8A865C2B9169F4695B9FB89FEA7` |
+| `payload.zip`（当前 Release 资源） | 34,124,523 B | `1870194FE7EE9502EF38911A0FD5046C8BEA67E9236402978024D44B84DE6B18` |
+| 本机参考构建 `split.exe` | 415,218,735 B | `A3C9376CCD76745A4EFB8293B315E372FC3FAD9F05408D4CCEEB24B7726DF573` |
 
 不同合法 PCK 布局可能使最终 EXE 整文件哈希不同；应用器逐条校验 PCK 资源，不要求生成物与本机参考 EXE 整文件相同。
 
@@ -61,7 +68,7 @@ v1.3.0 思维输入修复版：`undesirable` / `outcome` / `no` 三个思维词�
 
 ## GitHub Actions 发布
 
-推送 `v*` tag 时，`.github/workflows/release-installer.yml` 从 v1.1.0 取得并校验固定 payload，构建 Windows 安装器 ZIP、逐文件 SHA256 清单及压缩包摘要，并自动创建 Release。手动运行 workflow 只生成预览 artifact，不创建正式 Release。
+推送 `v*` tag 时，`.github/workflows/release-installer.yml` 从 `payload-v1.5.3` 取得并校验固定 payload，构建 Windows 安装器 ZIP、逐文件 SHA256 清单及压缩包摘要，并自动创建 Release。手动运行 workflow 只生成预览 artifact，不创建正式 Release。
 
 Release 资产包括安装器 ZIP、独立 `payload.zip` 和安装器 ZIP 的 SHA256 文件。仓库和资产均不包含游戏本体或 `split.exe`。
 

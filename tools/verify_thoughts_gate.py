@@ -6,13 +6,15 @@ a thought Label3D whose scene text is Chinese but which is NOT listed in TYPED_E
 falls into LabelSplitter's "type Chinese" branch -- no Chinese display line, and a
 Latin keyboard cannot produce 不/理/想, so the thought soft-locks.
 
-Layout contract (2026-10-01, second fix): thoughts that share a ThoughtBatch are
-typed back to back and are therefore drawn ONCE as a group sentence, by the group's
-topmost node (PHRASE_ZH).  A group's other words show no Chinese row of their own --
-their Chinese is carried by that sentence.  This exists because a thought node draws
-two rows (Chinese + typed English) while the scene only leaves ~1.28 rows between
-neighbouring nodes; giving every word its own Chinese row makes one word's letters
-land on the next word's Chinese row (the "UN结果IRABLI" overlap).
+Layout contract (2026-10-17, third fix -- per-word Chinese):
+every thought word owns the Chinese for ITSELF.  That Chinese is shown while the
+word is being typed and cleared the moment the word finishes, so the Chinese leaves
+one word at a time with the same rhythm in every group.  The row itself is drawn in
+ONE shared slot per group, at the group's topmost node, because a word's typed
+English row already drops one row below its own origin while the scene leaves far
+less than one row between neighbouring words (measured 0.0296 of world space against
+a 0.0400 row in the drill group) -- a Chinese row at each word's own origin therefore
+lands on a neighbour's English row, which is the "UN结果IRABLI" overlap.
 
 This gate cross-checks THREE sources, so an empty set cannot pass by accident:
   A. the scene source recovered/scenes/main.tscn -> nodes, their text, their batch
@@ -20,8 +22,8 @@ This gate cross-checks THREE sources, so an empty set cannot pass by accident:
   C. the compiled LabelSplitter.gdc                -> must carry every Chinese line
 
 FAIL on: a thought not covered by ANY Chinese line, a typed string containing
-non-ASCII, a group phrase that never reaches the bytecode, or a group that does not
-have exactly one carrier.
+non-ASCII, a group whose Chinese never reaches the bytecode, or a group with no
+identifiable slot node.
 Read-only.  Usage: python verify_thoughts_gate.py
 """
 import hashlib
@@ -65,7 +67,6 @@ def parse_map(name):
 
 TYPED_EN = parse_map("TYPED_EN")
 DISPLAY_ZH = parse_map("DISPLAY_ZH")
-PHRASE_ZH = parse_map("PHRASE_ZH")
 
 b = open(DIST, "rb").read()
 h = IS.scan_entries(b)
@@ -73,8 +74,7 @@ say("=" * 100)
 say("GATE: thought typing/display contract")
 say("=" * 100)
 say("  dist   %d B  sha256 %s" % (len(b), hashlib.sha256(b).hexdigest().upper()))
-say("  source TYPED_EN=%d  DISPLAY_ZH=%d  PHRASE_ZH=%d"
-    % (len(TYPED_EN), len(DISPLAY_ZH), len(PHRASE_ZH)))
+say("  source TYPED_EN=%d  DISPLAY_ZH=%d" % (len(TYPED_EN), len(DISPLAY_ZH)))
 
 # ---------------- A. the scene source: node -> text / batch / y ---------------
 lines = open(TS, encoding="utf-8", errors="replace").read().splitlines()
@@ -114,29 +114,21 @@ for s in rd.slots:
         scn_texts.setdefault(s["text"], []).append(s["path"])
 say("B. shipped main.scn   distinct STRING slot values: %d" % len(scn_texts))
 
-# ---------------- carrier uniqueness per batch ------------------------------
+# ---------------- slot uniqueness per batch ---------------------------------
 say("")
 say("-" * 100)
-say("C. one carrier per group (the group's topmost node draws the sentence)")
+say("C. one Chinese slot per group (the group's topmost node draws it)")
 say("-" * 100)
 by_batch = {}
 for name, t in thoughts.items():
     by_batch.setdefault(t["batch"], []).append(name)
-carriers = {}
-carrier_problems = []
+slots = {}
+slot_problems = []
 for bname, names in sorted(by_batch.items()):
     top = max(names, key=lambda n: thoughts[n]["y"])
-    carriers[bname] = top
-    alias = batches.get(bname, "")
-    phrase = PHRASE_ZH.get(alias, "")
-    say("  %-42s alias=%-22s words=%-2d carrier=%s  phrase=%r"
-        % (bname[:42], alias, len(names), top, phrase))
-    if phrase and len(names) > 1:
-        close = [n for n in names
-                 if n != top and abs(thoughts[n]["y"] - thoughts[top]["y"]) < 0.2]
-        if close:
-            say("      note: carrier has near-y siblings %s (lateral check is in"
-                " verify_phrase_layout.py)" % close)
+    slots[bname] = top
+    say("  %-42s alias=%-22s words=%-2d slot=%s"
+        % (bname[:42], batches.get(bname, ""), len(names), top))
 
 # ---------------- per-thought verdict ---------------------------------------
 say("")
@@ -151,28 +143,24 @@ for name in sorted(thoughts):
     t = thoughts[name]
     raw = t["raw"]
     typed = TYPED_EN.get(raw, "")
-    alias = batches.get(t["batch"], "")
-    phrase = PHRASE_ZH.get(alias, "")
-    if typed:
-        branch, disp = "TYPED_EN", raw
-    elif phrase:
-        branch = "PHRASE_ZH"
-        disp = phrase if carriers.get(t["batch"]) == name else ""
-    else:
-        branch, disp, typed = "DISPLAY_ZH", DISPLAY_ZH.get(raw, ""), raw
-    if not typed:
+    scene_zh = typed != ""
+    if not scene_zh:
         typed = raw
-    ascii_ok = all(ord(c) < 128 for c in typed)
+    if scene_zh:
+        branch, disp = "TYPED_EN", raw
+    else:
+        branch, disp = "DISPLAY_ZH", DISPLAY_ZH.get(raw, "")
+    ascii_ok = all(ord(c) < 128 for c in typed) and typed != ""
     in_scn = raw in scn_texts
     if not in_scn:
         missing_in_scn.append((name, raw))
-    # covered = this node shows a row, or its group's carrier shows the sentence
-    covered = bool(disp) or bool(phrase)
+    # covered = this word shows a Chinese row of its own.
+    covered = bool(disp)
     ok = covered and bool(typed) and ascii_ok and in_scn
     if not ok:
         bad.append((name, raw, disp, typed, ascii_ok, in_scn))
     say("  %-36s %-16s %-11s %-16s %-16s %s"
-        % (name[:36], raw, branch, disp or ("(group)" if phrase else "-"),
+        % (name[:36], raw, branch, disp or "-",
            typed or "-", "OK" if ok else "*** FAIL ***"))
 
 say("")
@@ -183,12 +171,11 @@ say("  contract violations: %d" % len(bad))
 # ---------------- E. the compiled script carries the lines -------------------
 say("")
 say("-" * 100)
-say("E. compiled %s carries every Chinese line (per-word AND group sentence)" % LSGDC)
+say("E. compiled %s carries every Chinese line and the slot machinery" % LSGDC)
 say("-" * 100)
 gdc, _e = IS.blob_of(b, h, LSGDC)
 need = {}
 need.update({"DISPLAY_ZH:" + k: v for k, v in DISPLAY_ZH.items() if v})
-need.update({"PHRASE_ZH:" + k: v for k, v in PHRASE_ZH.items() if v})
 if gdc[:4] != b"GDSC":
     miss = [("ALL", "not GDSC")]
 else:
@@ -200,17 +187,29 @@ else:
         import zlib
         body = zlib.decompress(gdc[12:])
     miss = [(k, v) for k, v in sorted(need.items()) if v.encode("utf-8") not in body]
-    say("  gdc blob %d B -> body %d B" % (len(gdc), len(body)))
+    # The per-word slot machinery must be in there too, or the row never advances.
+    # Function names live in the IDENTIFIER table, whose entries are stored XOR 0xb6,
+    # so they cannot be found by a plain byte search -- parse the table instead.
+    try:
+        import verify_gdc_bytecode as V
+        idents = set(V.parse_gdsc(gdc)["identifiers"])
+    except Exception as exc:
+        idents = set()
+        miss.append(("identifier table", "unparseable: %s" % exc))
+    for fn in ("RefreshSlot", "BatchSlot", "GroupHasChinese"):
+        if fn not in idents:
+            miss.append((fn, "function missing from the compiled identifier table"))
+    say("  gdc blob %d B -> body %d B   identifiers %d" % (len(gdc), len(body), len(idents)))
 say("  Chinese display strings missing from bytecode: %d %s" % (len(miss), miss if miss else ""))
 
 # ---------------- verdict ----------------------------------------------------
 say("")
 say("=" * 100)
 ok = ((not bad) and (not miss) and (not missing_in_scn)
-      and (not carrier_problems) and len(thoughts) > 0)
-say("VERDICT: %s" % ("PASS - %d thoughts, every one covered by a Chinese line "
-                     "(own row or its group sentence), all typable ASCII, all "
-                     "display strings compiled in" % len(thoughts) if ok
+      and (not slot_problems) and len(thoughts) > 0)
+say("VERDICT: %s" % ("PASS - %d thoughts, every one carries its own Chinese line "
+                     "(per-word contract), all typable ASCII, all display strings "
+                     "and the slot machinery compiled in" % len(thoughts) if ok
                      else "FAIL - violations=%d missing_in_scn=%d missing_strings=%d"
                           % (len(bad), len(missing_in_scn), len(miss))))
 say("=" * 100)
